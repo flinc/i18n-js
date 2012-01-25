@@ -68,13 +68,20 @@ module SimplesIdeias
 
     def configured_segments
       config[:translations].each_with_object({}) do |options,segments|
-        options.reverse_merge!(:only => "*")
-        if options[:file] =~ ::I18n::INTERPOLATION_PATTERN
-          segments.merge!(segments_per_locale(options[:file],options[:only]))
-        else
-          result = segment_for_scope(options[:only])
-          segments[options[:file]] = result unless result.empty?
+        default_locale = ::I18n.locale
+
+        ::I18n.locale = options[:locale]
+        translations = ::I18n.t(options[:scope])
+
+        if options[:fallback]
+          ::I18n.locale = options[:fallback]
+          fallback_translations = ::I18n.t(options[:scope])
+          translations = merge_fallback(fallback_translations, translations)
         end
+
+        ::I18n.locale = default_locale
+
+        segments[options[:file]] = { options[:locale].to_sym => { options[:scope] => translations }}
       end
     end
 
@@ -172,6 +179,22 @@ module SimplesIdeias
     def deep_merge!(target, hash) # :nodoc:
       target.merge!(hash, &MERGER)
     end
+
+    def merge_fallback(fallback, translations = {})
+      target = fallback.dup
+
+      translations.keys.each do |key|
+        if translations[key].is_a? Hash and fallback[key].is_a? Hash
+          target[key] = merge_fallback(fallback[key], translations[key])
+          next
+        end
+
+        target[key] = translations[key] || fallback[key]
+      end
+
+      target
+    end
+
   end
 end
 
