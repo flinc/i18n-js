@@ -128,8 +128,8 @@ module SimplesIdeias
       FileUtils.mkdir_p File.dirname(file)
 
       File.open(file, "w+") do |f|
-        f << %(flinc.I18n || (flinc.I18n = {});\n)
-        f << %(flinc.I18n.translations = );
+        f << %(I18n || (I18n = {});\n)
+        f << %(I18n.translations = );
         f << translations.to_json
         f << %(;)
       end
