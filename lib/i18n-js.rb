@@ -128,7 +128,7 @@ module SimplesIdeias
       FileUtils.mkdir_p File.dirname(file)
 
       File.open(file, "w+") do |f|
-        f << %(module.exports = {);
+        f << %(module.exports = { translations: );
         f << translations.to_json
         f << %(};)
       end
